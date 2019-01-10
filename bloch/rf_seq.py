@@ -1,15 +1,15 @@
 import numpy as np
-import scipy as sp
-import scipy.signal as sig
+from scipy.signal.windows import hann
 
-def hard_pulses(b1, flip_angle, seperation, length, count, dt, gamma=26752):
+
+def hard_pulses(b1, flip_angle, separation, length, count, dt, gamma=26752):
     """
-    Generates a series of hard rf pulses with a specific flip angle seperation and length.
+    Generates a series of hard rf pulses with a specific flip angle separation and length.
     
     Input:
     b1: Amplitude of rf pulse
     flip_angle: Array of flip angle for rf pulse in radians.
-    seperation: Time seperation for different rf puslses in seconds.
+    separation: Time separation for different rf puslses in seconds.
     length: Total time for rf pulse length in seconds. If length is too short, an error will be thrown.
     count: Number of rf pulses in the sequence.
     dt: dt for each index
@@ -20,13 +20,14 @@ def hard_pulses(b1, flip_angle, seperation, length, count, dt, gamma=26752):
     """
     total_units = int(length / dt)
     rf = np.zeros(total_units)
-    seperation_units = int(seperation / dt)
+    separation_units = int(separation / dt)
     for val in range(count):
         pulse_time = flip_angle[val] / (gamma * b1)
         pulse_units = int(pulse_time / dt)
-        start_idx = val * (seperation_units)
+        start_idx = val * separation_units
         rf[start_idx:start_idx+pulse_units] = b1 
     return rf
+
 
 def sinc_pulse(timebandwidth, flip_angle, duration, dt, gamma=26747.52):
     """
@@ -44,7 +45,7 @@ def sinc_pulse(timebandwidth, flip_angle, duration, dt, gamma=26747.52):
     """
     samples = duration / dt
     theta = np.linspace(-timebandwidth/2, timebandwidth/2, samples+2)
-    rf = np.sinc(theta[1:-1] * sig.hann(samples))
+    rf = np.sinc(theta[1:-1]) * hann(samples)
     rf = flip_angle * (rf/np.sum(rf))
     rf /= (gamma * dt)
     return rf
